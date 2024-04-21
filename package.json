@@ -1,0 +1,21 @@
+{
+    "name": "staruml.bpmnplus",
+    "title": "BPMN+",
+    "description": "Additional Features to the BPMN module",
+    "homepage": "https://github.com/agwebberley/bpmn-plugin",
+    "issues": "https://github.com/agwebberley/bpmn-plugin/issues",
+    "keywords": [
+      "BPMN",
+      "BPMN+"
+    ],
+    "version": "0.0.0",
+    "author": {
+      "name": "Agwebberley",
+      "email": "agwebberley@pm.me",
+      "url": "https://github.com/agwebberley"
+    },
+    "license": "MIT",
+    "engines": {
+      "staruml": ">=3.0.0"
+    }
+  }
