@@ -1,11 +1,14 @@
 function init() {
     console.log('Custom extension initialized');
     app.factory.on('elementCreated', function (newElement) {
-      console.log('Element created:', newElement);
-      if (newElement instanceof app.type.BPMNElement) {
-        console.log('BPMN element created:', newElement);
-        newElement.id = generateUniqueId(); // Replace this with your ID generation logic
-      }
+        console.log('Element created:', JSON.stringify(newElement));
+        // Check if the element has a _parent property = 'BPMNProcess'
+        // If it does, set the element's ID to a unique value
+        console.log(newElement.type)
+        console.log(json.stringify(newElement._parent))
+        if (newElement._parent === 'BPMNProcess') {
+            newElement.id = generateUniqueId();
+            }
     });
   }
   
