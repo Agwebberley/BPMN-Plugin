@@ -218,8 +218,8 @@ Panel:
 // Create a panel to search for elements
 function createPanel() {
   const panelManager = app.panelManager;
-  const $panel = $().load('panel.html');
-
+  const $panel = $('').load('panel.html');
+  console.log($panel);
   const panel = panelManager.createBottomPanel('custom-panel', $panel, 100);
   panel.show();
 }
