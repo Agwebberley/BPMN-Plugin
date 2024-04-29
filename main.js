@@ -122,30 +122,33 @@ function generateTags(model) {
 
   // Create a tag for the element name
   app.factory.createModel({
-    id: "Name",
+    id: "Tag",
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
+      tag.name = "Name";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = model.name;
     }
   });
 
   app.factory.createModel({
-    id: "ID",
+    id: "Tag",
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
+      tag.name = "ID";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = model.id;
     }
   });
 
   app.factory.createModel({
-    id: "Created",
+    id: "Tag",
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
+      tag.name = "Created";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = false;
     }
