@@ -76,6 +76,7 @@ class FileManager {
 function init() {
   console.log('Custom extension initialized');
   const fileManager = new FileManager(path.join(__dirname, 'elements.json'));
+  global.fileManager = fileManager;
   // Start the event listeners
   eventListeners();
     
