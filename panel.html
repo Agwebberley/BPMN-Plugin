@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel</title>
+    <style>
+        /* Add your custom CSS styles here */
+    </style>
+</head>
+<body>
+    <div id="panel">
+        <!-- Search bar -->
+        <input type="text" id="search" placeholder="Search">
+
+        <!-- List of items -->
+        <ul id="list">
+
+        </ul>
+        
+
+    </div>
+    
+    <script>
+        fetch(path.join(app.getUserPath(), 'elements.json'))
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('list');
+                data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item.name;
+                    list.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

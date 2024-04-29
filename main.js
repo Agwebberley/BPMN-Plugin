@@ -75,10 +75,12 @@ class FileManager {
 
 function init() {
   console.log('Custom extension initialized');
-  const fileManager = new FileManager(path.join(__dirname, 'elements.json'));
+  const fileManager = new FileManager(path.join(app.getUserPath(), 'elements.json'));
   global.fileManager = fileManager;
   // Start the event listeners
   eventListeners();
+  // Call the createPanel function to create the panel
+  createPanel();
     
 }
 
@@ -194,5 +196,35 @@ function addElement(model) {
   }
   fileManager.addElement(element);
 }
+
+/**
+Docs for creating a panel
+ PanelManager
+
+new PanelManager()
+Instance Members
+▾ createBottomPanel(id, $panel, minSize)
+Creates a new panel beneath the editor area and above the status bar footer. Panel is initially invisible.
+
+createBottomPanel(id: string, $panel: jQueryObject, minSize: number): Panel
+Parameters
+id (string) Unique id for this panel. Use package-style naming, e.g. "myextension.feature.panelname"
+$panel (jQueryObject) DOM content to use as the panel. Need not be in the document yet.
+minSize (number) Minimum height of panel in px.
+Returns
+Panel:
+ */
+// Create a panel to search for elements
+// Create a panel to search for elements
+function createPanel() {
+  const panelManager = app.panelManager;
+  const $panel = $().load('panel.html');
+
+  const panel = panelManager.createBottomPanel('custom-panel', $panel, 100);
+  panel.show();
+}
+
+
+
 
 exports.init = init;
