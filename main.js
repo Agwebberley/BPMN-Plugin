@@ -122,7 +122,6 @@ function generateTags(model) {
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
-      tag.name = "Name";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = model.name;
     }
@@ -134,7 +133,6 @@ function generateTags(model) {
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
-      tag.name = "ID";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = model.id;
     }
@@ -142,7 +140,6 @@ function generateTags(model) {
 
   // Create a tag for the element created by the extension
   var createdTag = app.factory.createModel({
-    id: "Created",
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
@@ -155,12 +152,22 @@ function generateTags(model) {
 
 function getTagValue(model, tagName) {
   const tag = model.tags.find(tag => tag.name === tagName);
-  return tag.value;
+  if (tag) {
+    console.log(`Tag ${tagName} found`);
+    return tag.value;
+  } else {
+    console.log(`Tag ${tagName} not found`);
+    return null;
+  }
 }
 
 function setTagValue(model, tagName, value) {
   const tag = model.tags.find(tag => tag.name === tagName);
-  tag.value = value;
+  if (tag) {
+    tag.value = value;
+  } else {
+    console.log(`Tag ${tagName} not found`);
+  }
 }
 
 // Add element to the fileManager
