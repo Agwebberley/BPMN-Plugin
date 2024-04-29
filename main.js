@@ -107,6 +107,10 @@ function eventListeners() {
 function generateId() {
     // Get the current max ID from the elements
     const maxId = Math.max(...fileManager.getElements().map(element => element.id));
+    // handle the case where there are no elements
+    if (maxId === -Infinity) {
+      return 0;
+    }
     return maxId + 1;
 }
 
@@ -117,7 +121,7 @@ function generateTags(model) {
   // [elementName , elementId, created = false,  ]
 
   // Create a tag for the element name
-  var nameTag = app.factory.createModel({
+  app.factory.createModel({
     id: "Name",
     parent: model,
     field: "tags",
@@ -127,8 +131,7 @@ function generateTags(model) {
     }
   });
 
-  // Create a tag for the element ID
-  var idTag = app.factory.createModel({
+  app.factory.createModel({
     id: "ID",
     parent: model,
     field: "tags",
@@ -138,12 +141,11 @@ function generateTags(model) {
     }
   });
 
-  // Create a tag for the element created by the extension
-  var createdTag = app.factory.createModel({
+  app.factory.createModel({
+    id: "Created",
     parent: model,
     field: "tags",
     modelInitializer: function (tag) {
-      tag.name = "Created";
       tag.kind = type.Tag.TK_HIDDEN;
       tag.value = false;
     }
