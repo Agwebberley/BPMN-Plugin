@@ -25,12 +25,15 @@ class FileManager {
     }
   }
 
-  saveElements() {
-    fs.writeFileSync(this.filePath, JSON.stringify(this.elements));
-  }
-
   addElement(element) {
+    // Check if the element ID already exists
+    const existingElement = this.getElementById(element.id);
+    if (existingElement) {
+      console.log('Element with ID', element.id, 'already exists');
+      return;
+    }
     this.elements.push(element);
+    this.SaveToFile();
   }
 
   getElementById(id) {
@@ -48,16 +51,23 @@ class FileManager {
   updateElement(element) {
     const index = this.elements.findIndex(e => e.id === element.id);
     this.elements[index] = element;
+    this.SaveToFile();
   }
 
   deleteElement(element) {
     const index = this.elements.findIndex(e => e.id === element.id);
     this.elements.splice(index, 1);
+    this.SaveToFile();
   }
 
   deleteElementById(id) {
     const index = this.elements.findIndex(e => e.id === id);
     this.elements.splice(index, 1);
+    this.SaveToFile();
+  }
+
+  SaveToFile() {
+    fs.writeFileSync(this.filePath, JSON.stringify(this.elements));
   }
 }
 
@@ -66,10 +76,15 @@ class FileManager {
 function init() {
   console.log('Custom extension initialized');
   const fileManager = new FileManager(path.join(__dirname, 'elements.json'));
-  app.factory.on('elementCreated', function (model, view) {
-    console.log('Element created:', model, view);
+  // Start the event listeners
+  eventListeners();
     
-    // Check if the model is an instance of BPMNBaseElement
+}
+
+function eventListeners() {
+// Check if the model is an instance of BPMNBaseElement
+  app.factory.on('elementCreated', function (model, view) {
+  console.log('Element created:', model, view);
     let proto = model;
     while (proto) {
       console.log(proto.constructor.name);
@@ -77,33 +92,94 @@ function init() {
         console.log('BPMNBaseElement found in the prototype chain');
         // Generate a unique ID
         model.id = generateId();
+        // Add hidden tags to the element
+        generateTags(model);
         console.log('Generated ID:', model.id);
+        // Add the element to the fileManager
+        addElement(model);
       }
       proto = Object.getPrototypeOf(proto);
     }
-
   });
 }
 
 function generateId() {
-    // Get the maximum ID from the stored elements
-    const path = require('path');
-    const filePath = path.join(__dirname, 'elements.json');
-    let elements = [];
-    try {
-      elements = JSON.parse(fs.readFileSync(filePath
-    ))} catch (e) {
-      console.log('No elements found');
-    }
-    let maxId = 0;
-    elements.forEach(function (element) {
-      if (element.id > maxId) {
-        maxId = element.id;
-      }
-    });
+    // Get the current max ID from the elements
+    const maxId = Math.max(...fileManager.getElements().map(element => element.id));
     return maxId + 1;
 }
 
 
+function generateTags(model) {
+  // Generate tags for the element
+  // Hidden Tags for the element
+  // [elementName , elementId, created = false,  ]
+
+  // Create a tag for the element name
+  var nameTag = app.factory.createModel({
+    id: "Name",
+    parent: model,
+    field: "tags",
+    modelInitializer: function (tag) {
+      tag.name = "Name";
+      tag.kind = type.Tag.TK_HIDDEN;
+      tag.value = model.name;
+    }
+  });
+
+  // Create a tag for the element ID
+  var idTag = app.factory.createModel({
+    id: "ID",
+    parent: model,
+    field: "tags",
+    modelInitializer: function (tag) {
+      tag.name = "ID";
+      tag.kind = type.Tag.TK_HIDDEN;
+      tag.value = model.id;
+    }
+  });
+
+  // Create a tag for the element created by the extension
+  var createdTag = app.factory.createModel({
+    id: "Created",
+    parent: model,
+    field: "tags",
+    modelInitializer: function (tag) {
+      tag.name = "Created";
+      tag.kind = type.Tag.TK_HIDDEN;
+      tag.value = false;
+    }
+  });
+}
+
+function getTagValue(model, tagName) {
+  const tag = model.tags.find(tag => tag.name === tagName);
+  return tag.value;
+}
+
+function setTagValue(model, tagName, value) {
+  const tag = model.tags.find(tag => tag.name === tagName);
+  tag.value = value;
+}
+
+// Add element to the fileManager
+function addElement(model) {
+  /* 
+  Example of an element
+  {
+    id: getTagValue(model, 'ID'),
+    name: getTagValue(model, 'Name'),
+    created: true
+    prototype: model.constructor.name
+  }
+  */
+  const element = {
+    id: getTagValue(model, 'ID'),
+    name: getTagValue(model, 'Name'),
+    created: true,
+    prototype: model.constructor.name
+  }
+  fileManager.addElement(element);
+}
 
 exports.init = init;
