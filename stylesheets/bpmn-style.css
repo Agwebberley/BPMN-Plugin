@@ -1,0 +1,29 @@
+.bottom-panel {
+    height: 1px; /* Adjust this value as needed */
+    overflow-y: auto;
+}
+
+/* Table styling */
+#panel table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#panel th, #panel td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Hover effect on table rows */
+#panel #list tbody tr:hover {
+    background-color: #4f5b66;
+    cursor: pointer;
+}
+
+/* Search bar styling */
+#panel #search {
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}

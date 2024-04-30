@@ -218,13 +218,10 @@ Panel:
 // Create a panel to search for elements
 function createPanel() {
   const panelManager = app.panelManager;
-  const $panel = $('').load('panel.html');
-  console.log($panel);
-  const panel = panelManager.createBottomPanel('custom-panel', $panel, 100);
+  // Use Panel.html as the content of the panel
+  const $panel = $(fs.readFileSync(path.join(__dirname, 'panel.html'), 'utf8'));
+  const panel = panelManager.createBottomPanel('custom-extension.search', $panel, 200);
   panel.show();
 }
-
-
-
 
 exports.init = init;

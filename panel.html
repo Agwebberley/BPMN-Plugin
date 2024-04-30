@@ -1,38 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Panel</title>
-    <style>
-        /* Add your custom CSS styles here */
-    </style>
-</head>
-<body>
-    <div id="panel">
+
+<div id="panel" class="bottom-panel">
+    <div class="view-header">
+        <h1>Elements</h1>
+    </div>
+    <div class="view-content" style="overflow-y: scroll">
+
         <!-- Search bar -->
         <input type="text" id="search" placeholder="Search">
 
-        <!-- List of items -->
-        <ul id="list">
-
-        </ul>
-        
-
+        <!-- Table of items -->
+        <table id="list">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Prototype</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be dynamically added here -->
+            </tbody>
+        </table>
     </div>
-    
-    <script>
-        fetch(path.join(app.getUserPath(), 'elements.json'))
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('list');
-                data.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item.name;
-                    list.appendChild(li);
+</div>
+
+<script>
+    const path = require('path');
+    fetch(path.join(app.getUserPath(), 'elements.json'))
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.querySelector('#list tbody');
+            const searchInput = document.querySelector('#search');
+
+            // Function to filter table rows based on search query
+            const filterTableRows = () => {
+                const query = searchInput.value.toLowerCase();
+                const rows = tableBody.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                    const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const prototype = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+
+                    if (id.includes(query) || name.includes(query) || prototype.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            };
+
+            // Add event listener to search input
+            searchInput.addEventListener('input', filterTableRows);
+
+            // Populate table with data
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const idCell = document.createElement('td');
+                const nameCell = document.createElement('td');
+                const prototypeCell = document.createElement('td');
+
+                idCell.textContent = item.id;
+                nameCell.textContent = item.name;
+                prototypeCell.textContent = item.prototype;
+
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                row.appendChild(prototypeCell);
+
+                tableBody.appendChild(row);
             });
-    </script>
-</body>
-</html>
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    console.log('hello');
+</script>
