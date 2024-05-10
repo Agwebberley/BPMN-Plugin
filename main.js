@@ -1,10 +1,8 @@
-// TODO: Create searchable list of elements
 // TODO: Add a keybinding to search for elements
-// TODO: Add hidden tags to elements
-// TODO: WARNING when element name is changed if created by the extension
-// TODO: If this is a new element, and the name is changed, edit the name of the element in the file
-// TODO: Save elements to file
-
+// TODO: Create element when the user selects an element from the panel
+// TODO: Update panel when an element is created
+// TODO: Warn if the user tries to rename an element the standard way
+// TODO: Open rename dialog when the user creates a new element
 
 // File Manager object
 const fs = require('fs');
@@ -77,6 +75,9 @@ function init() {
   console.log('Custom extension initialized');
   const fileManager = new FileManager(path.join(app.getUserPath(), 'elements.json'));
   global.fileManager = fileManager;
+  
+
+
   // Start the event listeners
   eventListeners();
   // Call the createPanel function to create the panel
@@ -90,9 +91,7 @@ function eventListeners() {
   console.log('Element created:', model, view);
     let proto = model;
     while (proto) {
-      console.log(proto.constructor.name);
       if (proto.constructor.name === 'BPMNBaseElement') {
-        console.log('BPMNBaseElement found in the prototype chain');
         // Generate a unique ID
         model.id = generateId();
         // Add hidden tags to the element
@@ -104,6 +103,51 @@ function eventListeners() {
       proto = Object.getPrototypeOf(proto);
     }
   });
+
+  // Listen for the rename event created by panel.html
+  document.addEventListener('rename', function (Event) {
+    console.log(Event.detail);
+    // Create dialog to ask for the new name
+    app.dialogs.showInputDialog("Enter the new name.").then(function ({buttonId, returnValue}) {
+      console.log(buttonId)
+      if (buttonId === 'ok') {
+        // Get the new name from the input
+        const newName = returnValue;
+        // Check if any other element has the same name
+        const existingElement = fileManager.getElementByName(newName);
+        if (existingElement) {
+          app.dialogs.showAlertDialog(`An element with name ${newName} already exists.`)
+
+          console.log('Element with name', newName, 'already exists');
+          return;
+        }
+        // Get the element by ID
+        const element = fileManager.getElementById(Event.detail.id);
+        // Update the element name
+        element.name = newName;
+        // Update the element in the fileManager
+        fileManager.updateElement(element);
+
+        // Rename all the elements in the diagram with matching ID
+        const elements = app.repository.select(`[id=${Event.detail.id}]`);
+        elements.forEach(model => {
+          model.name = newName;
+          setTagValue(model, 'Name', newName);
+        });
+        // Emit an event to update the panel
+        const event = new CustomEvent('renameSuccess', {detail: {id: Event.detail.id, name: newName}});
+        document.dispatchEvent(event);
+      } else {
+        console.log('Dialog canceled');
+      }
+    });
+  });
+
+
+  // No event is emitted when an element's name is changed
+  // How could we listen to this event?
+  
+  
 }
 
 function generateId() {
@@ -144,23 +188,11 @@ function generateTags(model) {
       tag.value = model.id;
     }
   });
-
-  app.factory.createModel({
-    id: "Tag",
-    parent: model,
-    field: "tags",
-    modelInitializer: function (tag) {
-      tag.name = "Created";
-      tag.kind = type.Tag.TK_HIDDEN;
-      tag.value = false;
-    }
-  });
 }
 
 function getTagValue(model, tagName) {
   const tag = model.tags.find(tag => tag.name === tagName);
   if (tag) {
-    console.log(`Tag ${tagName} found`);
     return tag.value;
   } else {
     console.log(`Tag ${tagName} not found`);
