@@ -89,19 +89,37 @@ function eventListeners() {
 // Check if the model is an instance of BPMNBaseElement
   app.factory.on('elementCreated', function (model, view) {
   console.log('Element created:', model, view);
+  if (!model.id) {
     let proto = model;
     while (proto) {
       if (proto.constructor.name === 'BPMNBaseElement') {
+        app.dialogs.showInputDialog("Enter a name.").then(function ({buttonId, returnValue}) {
+          console.log(buttonId)
+          if (buttonId === 'ok') {
+            // Get the new name from the input
+            const newName = returnValue;
+            // Check if any other element has the same name
+            const existingElement = fileManager.getElementByName(newName);
+            if (existingElement) {
+              app.dialogs.showAlertDialog(`An element with name ${newName} already exists.`)
+    
+              console.log('Element with name', newName, 'already exists');
+              return;
+            
+              
+            }
+            model.name = newName;
+          }
+        });
         // Generate a unique ID
         model.id = generateId();
-        // Add hidden tags to the element
-        generateTags(model);
         console.log('Generated ID:', model.id);
         // Add the element to the fileManager
         addElement(model);
       }
       proto = Object.getPrototypeOf(proto);
     }
+  }
   });
 
   // Listen for the rename event created by panel.html
@@ -132,7 +150,6 @@ function eventListeners() {
         const elements = app.repository.select(`[id=${Event.detail.id}]`);
         elements.forEach(model => {
           model.name = newName;
-          setTagValue(model, 'Name', newName);
         });
         // Emit an event to update the panel
         const event = new CustomEvent('renameSuccess', {detail: {id: Event.detail.id, name: newName}});
@@ -142,13 +159,34 @@ function eventListeners() {
       }
     });
   });
+  document.addEventListener('rowClicked', function (Event) {
+    // Check that the diagram is a BPMNDiagram
+    if (app.diagrams.getCurrentDiagram().constructor.name !== 'BPMNDiagram') {
+      console.log('Not a BPMNDiagram');
+      return;
+    }
 
-
-  // No event is emitted when an element's name is changed
-  // How could we listen to this event?
-  
-  
+    console.log(Event.detail);
+    // Get the element by ID
+    const element = fileManager.getElementById(Event.detail.id);
+    console.log(app.diagrams.getCurrentDiagram());
+    let options = {
+      id: element.prototype,
+      parent: app.diagrams.getCurrentDiagram()._parent, // Get current diagram
+      diagram: app.diagrams.getCurrentDiagram(),
+      x1: 50,
+      y1: 20,
+      x2: 50,
+      y2: 20,
+      modelInitializer: function (model) {
+        model.id = element.id;
+        model.name = element.name;
+      }
+    }
+    let model = app.factory.createModelAndView(options);
+  });
 }
+
 
 function generateId() {
     // Get the current max ID from the elements
@@ -160,93 +198,16 @@ function generateId() {
     return maxId + 1;
 }
 
-
-function generateTags(model) {
-  // Generate tags for the element
-  // Hidden Tags for the element
-  // [elementName , elementId, created = false,  ]
-
-  // Create a tag for the element name
-  app.factory.createModel({
-    id: "Tag",
-    parent: model,
-    field: "tags",
-    modelInitializer: function (tag) {
-      tag.name = "Name";
-      tag.kind = type.Tag.TK_HIDDEN;
-      tag.value = model.name;
-    }
-  });
-
-  app.factory.createModel({
-    id: "Tag",
-    parent: model,
-    field: "tags",
-    modelInitializer: function (tag) {
-      tag.name = "ID";
-      tag.kind = type.Tag.TK_HIDDEN;
-      tag.value = model.id;
-    }
-  });
-}
-
-function getTagValue(model, tagName) {
-  const tag = model.tags.find(tag => tag.name === tagName);
-  if (tag) {
-    return tag.value;
-  } else {
-    console.log(`Tag ${tagName} not found`);
-    return null;
-  }
-}
-
-function setTagValue(model, tagName, value) {
-  const tag = model.tags.find(tag => tag.name === tagName);
-  if (tag) {
-    tag.value = value;
-  } else {
-    console.log(`Tag ${tagName} not found`);
-  }
-}
-
 // Add element to the fileManager
 function addElement(model) {
-  /* 
-  Example of an element
-  {
-    id: getTagValue(model, 'ID'),
-    name: getTagValue(model, 'Name'),
-    created: true
-    prototype: model.constructor.name
-  }
-  */
   const element = {
-    id: getTagValue(model, 'ID'),
-    name: getTagValue(model, 'Name'),
-    created: true,
+    id: model.id,
+    name: model.name,
     prototype: model.constructor.name
   }
   fileManager.addElement(element);
 }
 
-/**
-Docs for creating a panel
- PanelManager
-
-new PanelManager()
-Instance Members
-▾ createBottomPanel(id, $panel, minSize)
-Creates a new panel beneath the editor area and above the status bar footer. Panel is initially invisible.
-
-createBottomPanel(id: string, $panel: jQueryObject, minSize: number): Panel
-Parameters
-id (string) Unique id for this panel. Use package-style naming, e.g. "myextension.feature.panelname"
-$panel (jQueryObject) DOM content to use as the panel. Need not be in the document yet.
-minSize (number) Minimum height of panel in px.
-Returns
-Panel:
- */
-// Create a panel to search for elements
 // Create a panel to search for elements
 function createPanel() {
   const panelManager = app.panelManager;

@@ -66,10 +66,24 @@
                 nameCell.textContent = item.name;
                 prototypeCell.textContent = item.prototype;
                 renameButton.textContent = 'Rename';
+                console.log(item.prototype)
 
                 // Add event listener to rename button
                 renameButton.addEventListener('click', () => {
                     const event = new CustomEvent('rename', {
+                        detail: {
+                            id: item.id,
+                            name: item.name,
+                            type: item.prototype
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    // Stop event propagation
+                    e.stopPropagation();
+                });
+                // Add event listener to row
+                row.addEventListener('click', () => {
+                    const event = new CustomEvent('rowClicked', {
                         detail: {
                             id: item.id,
                             name: item.name
