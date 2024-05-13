@@ -1,8 +1,4 @@
-// TODO: Add a keybinding to search for elements
-// TODO: Create element when the user selects an element from the panel
 // TODO: Update panel when an element is created
-// TODO: Warn if the user tries to rename an element the standard way
-// TODO: Open rename dialog when the user creates a new element
 
 // File Manager object
 const fs = require('fs');
@@ -89,7 +85,8 @@ function eventListeners() {
 // Check if the model is an instance of BPMNBaseElement
   app.factory.on('elementCreated', function (model, view) {
   console.log('Element created:', model, view);
-  if (!model.id) {
+  console.log(model.id)
+  if (!model.id && model.id !== 0) {
     let proto = model;
     while (proto) {
       if (proto.constructor.name === 'BPMNBaseElement') {
@@ -184,6 +181,23 @@ function eventListeners() {
       }
     }
     let model = app.factory.createModelAndView(options);
+  });
+
+  // On Save event check that IDs match names, if not show a warning
+  app.project.on('projectSaved', function (project) {
+    const elements = fileManager.getElements();
+    console.log(app.repository.select('@BPMNBaseElement'));
+    // For each element in app.repository.select('@BPMNBaseElement') check if the ID matches the name
+    const mismatchedElements = app.repository.select('@BPMNBaseElement').filter(model => {
+      if (!model.id || !model.name) {
+        return false;
+      }
+      const element = elements.find(e => e.id === model.id);
+      return element.name !== model.name;
+    });
+    if (mismatchedElements.length > 0) {
+      app.dialogs.showAlertDialog(`There are ${mismatchedElements.length} elements with different names in the file manager. Please update the names in the diagram to match the file manager.`);
+    }
   });
 }
 
