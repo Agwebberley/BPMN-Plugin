@@ -1,4 +1,3 @@
-// TODO: Update panel when an element is created
 
 // File Manager object
 const fs = require('fs');
@@ -104,8 +103,14 @@ function eventListeners() {
               return;
             
               
-            }
+            } 
             model.name = newName;
+            // Emit an event to update the panel
+            const event = new CustomEvent('newElement',  {detail: {id: model.id, name: newName, prototype: model.constructor.name}});
+            document.dispatchEvent(event);
+          } else {
+            console.log('Dialog canceled');
+            app.engine.deleteElements([model], [view]);
           }
         });
         // Generate a unique ID
@@ -151,6 +156,7 @@ function eventListeners() {
         // Emit an event to update the panel
         const event = new CustomEvent('renameSuccess', {detail: {id: Event.detail.id, name: newName}});
         document.dispatchEvent(event);
+
       } else {
         console.log('Dialog canceled');
       }
@@ -196,7 +202,7 @@ function eventListeners() {
       return element.name !== model.name;
     });
     if (mismatchedElements.length > 0) {
-      app.dialogs.showAlertDialog(`There are ${mismatchedElements.length} elements with different names in the file manager. Please update the names in the diagram to match the file manager.`);
+      app.dialogs.showAlertDialog(`There are ${mismatchedElements.length} elements with different names in the file manager. Please update the names in the diagram to match the file manager. Note: Changing the name in the diagram will not update the name in the file.`);
     }
   });
 }

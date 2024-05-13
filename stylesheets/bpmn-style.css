@@ -27,3 +27,11 @@
     margin-bottom: 10px;
     width: 100%;
 }
+
+#panel #search input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}

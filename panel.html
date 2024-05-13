@@ -121,4 +121,44 @@
             row.querySelector('td:nth-child(2)').textContent = name;
         }
     });
+
+    // Listen for newElement event and add new row to table
+    document.addEventListener('newElement', (detail) => {
+        const { id, name, prototype } = detail.detail;
+
+        const tableBody = document.querySelector('#list tbody');
+        const row = document.createElement('tr');
+        const idCell = document.createElement('td');
+        const nameCell = document.createElement('td');
+        const prototypeCell = document.createElement('td');
+        const renameCell = document.createElement('td');
+        const renameButton = document.createElement('button');
+
+        idCell.textContent = id;
+        nameCell.textContent = name;
+        prototypeCell.textContent = prototype;
+        renameButton.textContent = 'Rename';
+
+        // Add event listener to rename button
+        renameButton.addEventListener('click', () => {
+            const event = new CustomEvent('rename', {
+                detail: {
+                    id: id,
+                    name: name,
+                    type: prototype
+                }
+            });
+            document.dispatchEvent(event);
+            // Stop event propagation
+            e.stopPropagation();
+        });
+
+        row.appendChild(idCell);
+        row.appendChild(nameCell);
+        row.appendChild(prototypeCell);
+        row.appendChild(renameCell);
+        renameCell.appendChild(renameButton);
+
+        tableBody.appendChild(row);
+    });
 </script>
