@@ -4,6 +4,9 @@
     </div>
     <div class="view-content" style="overflow-y: scroll">
 
+        <!-- Import Diagram Button-->
+        <button id="import-diagram" class="btn">Import Diagram</button>
+
         <!-- Search bar -->
         <input type="text" id="search" placeholder="Search">
 
@@ -160,5 +163,11 @@
         renameCell.appendChild(renameButton);
 
         tableBody.appendChild(row);
+    });
+
+    // When the import button is clicked, dispatch an event
+    document.querySelector('#import-diagram').addEventListener('click', () => {
+        const event = new CustomEvent('importDiagram');
+        document.dispatchEvent(event);
     });
 </script>

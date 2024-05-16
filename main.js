@@ -12,6 +12,7 @@ class FileManager {
 
   loadElements() {
     try {
+      console.log('Loading elements from file:', this.filePath);
       this.elements = JSON.parse(fs.readFileSync(this.filePath));
     } catch (e) {
       console.log('No elements found');
@@ -205,6 +206,11 @@ function eventListeners() {
       app.dialogs.showAlertDialog(`There are ${mismatchedElements.length} elements with different names in the file manager. Please update the names in the diagram to match the file manager. Note: Changing the name in the diagram will not update the name in the file.`);
     }
   });
+
+  // Listen for import event created by panel.html
+  document.addEventListener('importDiagram', function (Event) {
+    importDiagram();
+  });
 }
 
 
@@ -226,6 +232,27 @@ function addElement(model) {
     prototype: model.constructor.name
   }
   fileManager.addElement(element);
+}
+
+function importDiagram() {
+  // Get the current diagram elements
+  const diagramElements = app.repository.select('@BPMNBaseElement') // replace with your function to get diagram elements
+
+  // Import each element
+  diagramElements.forEach(element => {
+    console.log('Importing element:', element)
+      // Check if an element with the same name already exists
+      const existingElement = fileManager.getElements().find(e => e.name === element.name);
+      if (existingElement) {
+          // If it does, just set the id
+
+          element.id = existingElement.id;
+      } else {
+          // If it doesn't, add the element
+          element.id = generateId();
+          addElement(element);
+      }
+  });
 }
 
 // Create a panel to search for elements
